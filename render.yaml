@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: smart-expense-splitter
+    env: python
+    region: singapore # Optional: defaults to Oregon
+    plan: free
+    branch: master
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --chdir smart_expense_splitter app:app --log-file -
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: SECRET_KEY
+        generateValue: true
