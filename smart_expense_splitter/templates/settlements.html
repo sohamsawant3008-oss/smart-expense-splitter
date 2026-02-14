@@ -4,38 +4,40 @@
 <h3 class="mb-4">💸 Who Owes Whom</h3>
 
 {% if settlements %}
-<table class="table table-striped align-middle">
-    <thead>
-        <tr>
-            <th>From</th>
-            <th>To</th>
-            <th>Amount</th>
-            <th style="width: 160px;">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for s in settlements %}
-        <tr>
-            <td><strong>{{ s.from }}</strong></td>
-            <td><strong>{{ s.to }}</strong></td>
-            <td class="fw-bold text-danger">₹ {{ s.amount }}</td>
-            <td>
-                <div class="btn-group">
-                    <!-- Edit: Settle Partial -->
-                    <a href="/settle-partial/{{ s.from_id }}/{{ s.to_id }}/{{ s.amount }}"
-                        class="btn btn-sm btn-warning">✏️ Edit</a>
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Amount</th>
+                <th style="width: 160px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in settlements %}
+            <tr>
+                <td><strong>{{ s.from }}</strong></td>
+                <td><strong>{{ s.to }}</strong></td>
+                <td class="fw-bold text-danger text-nowrap">₹ {{ s.amount }}</td>
+                <td>
+                    <div class="btn-group">
+                        <!-- Edit: Settle Partial -->
+                        <a href="/settle-partial/{{ s.from_id }}/{{ s.to_id }}/{{ s.amount }}"
+                            class="btn btn-sm btn-warning">✏️ Edit</a>
 
-                    <!-- Delete: Settle Full -->
-                    <form method="post" action="/settle-full/{{ s.from_id }}/{{ s.to_id }}/{{ s.amount }}"
-                        onsubmit="return confirm('Settle this debt fully?')" style="display:inline;">
-                        <button class="btn btn-sm btn-danger">🗑️</button>
-                    </form>
-                </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                        <!-- Delete: Settle Full -->
+                        <form method="post" action="/settle-full/{{ s.from_id }}/{{ s.to_id }}/{{ s.amount }}"
+                            onsubmit="return confirm('Settle this debt fully?')" style="display:inline;">
+                            <button class="btn btn-sm btn-danger">🗑️</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% else %}
 <p class="text-success fw-bold">🎉 Everyone is settled!</p>
 {% endif %}

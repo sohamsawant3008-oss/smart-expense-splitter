@@ -5,11 +5,11 @@
 <div class="row mb-3">
     <div class="col-12">
         <div class="card">
-            <div class="card-body d-flex justify-content-between align-items-center">
+            <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h5 class="mb-0">Quick Actions</h5>
-                <div>
-                    <a href="/analytics" class="btn btn-info btn-sm me-2">📊 Analytics</a>
-                    <a href="/settlements" class="btn btn-warning btn-sm me-2">💰 Settlements</a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/analytics" class="btn btn-info btn-sm">📊 Analytics</a>
+                    <a href="/settlements" class="btn btn-warning btn-sm">💰 Settlements</a>
                     <a href="/dashboard" class="btn btn-primary btn-sm">📈 Dashboard</a>
                 </div>
             </div>
@@ -94,8 +94,7 @@
                             <a href="/edit-user/{{ user.id }}" class="btn btn-sm btn-warning">✏️ Edit</a>
 
                             <form method="post" action="/delete-user/{{ user.id }}" style="display:inline;">
-                                <button class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Delete this user?')">
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this user?')">
                                     🗑️
                                 </button>
                             </form>
@@ -106,7 +105,7 @@
 
             </div>
         </div>
-    </div>  <!-- ✅ FIXED CLOSING DIV -->
+    </div> <!-- ✅ FIXED CLOSING DIV -->
 
     <!-- ================= EXPENSES ================= -->
     <div class="col-md-8">
@@ -118,39 +117,39 @@
 
             <div class="card-body">
                 {% if group.expenses %}
-                <table class="table table-striped align-middle">
-                    <thead>
-                        <tr>
-                            <th>Description</th>
-                            <th>Amount</th>
-                            <th>Payer</th>
-                            <th style="width: 160px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for e in group.expenses %}
-                        <tr>
-                            <td>{{ e.description }}</td>
-                            <td>₹ {{ "{:.2f}".format(e.amount) }}</td>
-                            <td>{{ e.payer.name }}</td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="/edit-expense/{{ e.id }}" class="btn btn-sm btn-warning">✏️ Edit</a>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Payer</th>
+                                <th style="width: 160px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in group.expenses %}
+                            <tr>
+                                <td>{{ e.description }}</td>
+                                <td class="text-nowrap">₹ {{ "{:.2f}".format(e.amount) }}</td>
+                                <td>{{ e.payer.name }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/edit-expense/{{ e.id }}" class="btn btn-sm btn-warning">✏️ Edit</a>
 
-                                    <form method="post"
-                                          action="/delete-expense/{{ e.id }}"
-                                          onsubmit="return confirm('Delete this expense?')"
-                                          style="display:inline;">
-                                        <button class="btn btn-sm btn-danger">🗑️</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                        <form method="post" action="/delete-expense/{{ e.id }}"
+                                            onsubmit="return confirm('Delete this expense?')" style="display:inline;">
+                                            <button class="btn btn-sm btn-danger">🗑️</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% else %}
-                    <p class="text-muted mb-0">No expenses yet.</p>
+                <p class="text-muted mb-0">No expenses yet.</p>
                 {% endif %}
             </div>
         </div>
