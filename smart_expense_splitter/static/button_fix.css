@@ -1,0 +1,183 @@
+/* ============ BUTTON VISIBILITY FIX ============ */
+
+/* Universal button visibility */
+.btn, button, a.btn {
+    visibility: visible !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Ensure table cells don't hide content */
+.table td {
+    overflow: visible !important;
+    text-align: left;
+    position: relative !important;
+}
+
+.table tbody tr {
+    overflow: visible !important;
+    position: relative !important;
+}
+
+/* Ensure action buttons column is always visible */
+.table td:last-child {
+    white-space: normal !important;
+    overflow: visible !important;
+    display: table-cell !important;
+    min-width: 280px;
+    padding: 10px !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Make sure buttons inside are visible and clickable */
+.table td:last-child .btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 4px 2px !important;
+    float: none !important;
+    clear: both;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+/* Responsive table wrapper to ensure horizontal scrolling if needed */
+.table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+/* Force all button styles to be visible */
+a.btn {
+    visibility: visible !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    z-index: 10 !important;
+    position: relative !important;
+}
+
+.btn-warning {
+    visibility: visible !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    z-index: 10 !important;
+}
+
+.btn-danger {
+    visibility: visible !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    z-index: 10 !important;
+}
+
+.btn-outline-danger {
+    visibility: visible !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    z-index: 10 !important;
+}
+
+.btn-sm {
+    visibility: visible !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+}
+
+/* Fix for table row display */
+.table tbody tr td {
+    vertical-align: middle;
+}
+
+/* Fix for list-group items with buttons */
+.list-group-item {
+    overflow: visible !important;
+    position: relative !important;
+}
+
+.list-group-item div {
+    overflow: visible !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.list-group-item .btn {
+    visibility: visible !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    padding: 0.375rem 0.75rem !important;
+    min-width: fit-content !important;
+    z-index: 10 !important;
+}
+
+.list-group-item form {
+    display: inline-flex !important;
+    margin: 0 !important;
+    z-index: 10 !important;
+}
+
+.list-group-item form .btn {
+    visibility: visible !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    padding: 0.375rem 0.75rem !important;
+    z-index: 10 !important;
+}
+
+/* Override any Bootstrap hiding */
+.d-none {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Make sure buttons are clickable */
+button:disabled,
+.btn:disabled {
+    opacity: 1 !important;
+}
+
+/* Extra rule for edit buttons in tables */
+.table a.btn-warning {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin-right: 5px !important;
+}
+
+.table form .btn-danger {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Force table columns to not hide content */
+table td {
+    overflow: visible !important;
+    text-overflow: initial !important;
+}
+
+/* Specific for Actions column - make absolutely sure it's visible */
+table tbody tr td:last-child {
+    overflow: visible !important;
+    min-width: 140px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+table tbody tr td:last-child a,
+table tbody tr td:last-child button {
+    visibility: visible !important;
+    display: inline-block !important;
+    margin: 0 3px !important;
+}
+
+
+

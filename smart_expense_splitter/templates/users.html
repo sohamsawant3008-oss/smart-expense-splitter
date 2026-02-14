@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>👤 Users</h2>
+
+<a href="/" class="btn btn-secondary mb-3">⬅ Back</a>
+
+<table class="table table-bordered">
+  <tr>
+    <th>Name</th>
+    <th>Balance</th>
+    <th>Actions</th>
+  </tr>
+
+  {% for u in users %}
+  <tr>
+    <td>{{ u.name }}</td>
+    <td>₹{{ "%.2f"|format(u.balance) }}</td>
+    <td>
+      <a href="/edit-user/{{ u.id }}" class="btn btn-sm btn-warning me-2">✏️ Edit</a>
+      <form method="POST" action="/delete-user/{{ u.id }}" style="display:inline;">
+        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete user?')">🗑️ Delete</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+{% endblock %}

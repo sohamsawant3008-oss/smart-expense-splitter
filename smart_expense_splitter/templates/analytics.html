@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Summary Statistics Cards -->
+<!-- Data source: Dynamic - calculated statistics from group.expenses in app.py analytics() route -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-muted mb-2">Total Expenses</h5>
+                <h3 class="mb-0">₹{{ "%.2f"|format(total_expenses) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-muted mb-2">Total Transactions</h5>
+                <h3 class="mb-0">{{ expense_count }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-muted mb-2">Average Expense</h5>
+                <h3 class="mb-0">₹{{ "%.2f"|format(avg_expense) }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-muted mb-2">Active Users</h5>
+                <h3 class="mb-0">{{ labels|length if labels else 0 }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Row 1: Total Paid & Distribution -->
+<div class="row mb-4">
+    <!-- Chart 1: Total Paid Per User (Bar Chart) -->
+    <!-- Data source: Dynamic - totals calculated from group.expenses in app.py analytics() route -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">💰 Total Paid Per User</div>
+            <div class="card-body">
+                {% if labels %}
+                    <canvas id="totalPaidChart"></canvas>
+                {% else %}
+                    <p class="text-muted">No expenses to analyze yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Expense Distribution (Doughnut Chart) -->
+    <!-- Data source: Dynamic - same totals data, displayed as percentage distribution -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">📊 Expense Distribution</div>
+            <div class="card-body">
+                {% if labels %}
+                    <canvas id="distributionChart"></canvas>
+                {% else %}
+                    <p class="text-muted">No expenses to analyze yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Row 2: Expense Count & Timeline -->
+<div class="row mb-4">
+    <!-- Chart 3: Number of Expenses Per User (Bar Chart) -->
+    <!-- Data source: Dynamic - expense_counts calculated from group.expenses in app.py analytics() route -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">📈 Expenses Count Per User</div>
+            <div class="card-body">
+                {% if labels %}
+                    <canvas id="expenseCountChart"></canvas>
+                {% else %}
+                    <p class="text-muted">No expenses to analyze yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 4: Expenses Over Time (Line Chart) -->
+    <!-- Data source: Dynamic - expenses_by_date calculated from expense.date field in app.py analytics() route -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header fw-bold">📅 Expenses Over Time</div>
+            <div class="card-body">
+                {% if date_labels %}
+                    <canvas id="timelineChart"></canvas>
+                {% else %}
+                    <p class="text-muted">No date data available for timeline analysis.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Chart color palette - consistent with Bootstrap theme
+    const chartColors = {
+        primary: '#0d6efd',
+        success: '#198754',
+        info: '#0dcaf0',
+        warning: '#ffc107',
+        danger: '#dc3545',
+        secondary: '#6c757d',
+        colors: ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#0dcaf0', '#6c757d', '#fd7e14', '#6f42c1']
+    };
+
+    // Data from backend (dynamic data from Flask template variables)
+    // All variables are always initialized by the backend, even if empty arrays
+    const labels = {{ labels | safe }};
+    const values = {{ values | safe }};
+    const countValues = {{ count_values | safe }};
+    const dateLabels = {{ date_labels | safe }};
+    const dateValues = {{ date_values | safe }};
+
+    // Chart 1: Total Paid Per User (Bar Chart)
+    // Data source: values array - total amount paid by each user
+    {% if labels %}
+    const totalPaidCtx = document.getElementById('totalPaidChart');
+    new Chart(totalPaidCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Paid (₹)',
+                data: values,
+                backgroundColor: chartColors.colors.slice(0, labels.length),
+                borderColor: chartColors.colors.slice(0, labels.length),
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '₹' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toFixed(0);
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Chart 2: Expense Distribution (Doughnut Chart)
+    // Data source: values array - shows percentage distribution of expenses by payer
+    {% if labels %}
+    const distributionCtx = document.getElementById('distributionChart');
+    new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: values,
+                backgroundColor: chartColors.colors.slice(0, labels.length),
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return context.label + ': ₹' + context.parsed.toFixed(2) + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Chart 3: Expense Count Per User (Bar Chart)
+    // Data source: countValues array - number of expenses made by each user
+    {% if labels %}
+    const expenseCountCtx = document.getElementById('expenseCountChart');
+    new Chart(expenseCountCtx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Number of Expenses',
+                data: countValues,
+                backgroundColor: chartColors.info,
+                borderColor: chartColors.primary,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y + ' expense(s)';
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Chart 4: Expenses Over Time (Line Chart)
+    // Data source: dateValues array - expenses grouped by date from expense.date field
+    {% if date_labels %}
+    const timelineCtx = document.getElementById('timelineChart');
+    new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: dateLabels,
+            datasets: [{
+                label: 'Total Expenses (₹)',
+                data: dateValues,
+                borderColor: chartColors.success,
+                backgroundColor: chartColors.success + '20',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '₹' + context.parsed.y.toFixed(2);
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toFixed(0);
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+
+<style>
+    /* Responsive chart containers */
+    .card-body canvas {
+        max-height: 300px;
+    }
+    
+    /* Ensure cards have consistent spacing */
+    .card {
+        margin-bottom: 0;
+    }
+    
+    /* Summary cards styling */
+    .card-body h3 {
+        color: #0d6efd;
+        font-weight: bold;
+    }
+</style>
+
+{% endblock %}

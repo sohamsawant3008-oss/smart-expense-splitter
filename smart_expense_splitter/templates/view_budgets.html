@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">💳 Budget Tracking</h4>
+                </div>
+                <div class="card-body">
+                    {% if budget_data %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Budget</th>
+                                    <th>Spent</th>
+                                    <th>Remaining</th>
+                                    <th>Usage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in budget_data %}
+                                 <tr>
+                                    <td><strong>{{ item.user }}</strong></td>
+                                    <td>₹ {{ "{:.2f}".format(item.budget) }}</td>
+                                    <td>₹ {{ "{:.2f}".format(item.spent) }}</td>
+                                    <td class="{% if item.remaining < 0 %}text-danger{% else %}text-success{% endif %}">
+                                        ₹ {{ "{:.2f}".format(item.remaining) }}
+                                    </td>
+                                    <td>
+                                        {% set pct = [item.percentage, 100]|min %}
+                                        {% set pct_display = "%.1f"|format(item.percentage) %}
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar {% if item.percentage > 100 %}bg-danger{% elif item.percentage > 80 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" aria-valuenow="{{ pct }}">
+                                                {{ pct_display }}%
+                                            </div>
+                                        </div>
+                                        <script>
+                                            document.currentScript.previousElementSibling.querySelector('.progress-bar').style.width = '{{ pct }}%';
+                                        </script>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No budgets set. <a href="/">Set a budget</a></p>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-secondary">⬅ Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

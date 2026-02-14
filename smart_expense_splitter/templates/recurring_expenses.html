@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">🔄 Recurring Expenses</h4>
+                    <a href="/" class="btn btn-sm btn-light">⬅ Back</a>
+                </div>
+                <div class="card-body">
+                    {% if expenses %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                    <th>Payer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exp in expenses %}
+                                <tr>
+                                    <td>{{ exp.description }}</td>
+                                    <td>₹ {{ "{:.2f}".format(exp.amount) }}</td>
+                                    <td><span class="badge bg-warning">{{ exp.recurrence_type }}</span></td>
+                                    <td>{{ exp.payer.name }}</td>
+                                    <td>
+                                        <a href="/edit-expense/{{ exp.id }}" class="btn btn-sm btn-warning">Edit</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No recurring expenses set up yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

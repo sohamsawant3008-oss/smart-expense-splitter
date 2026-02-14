@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>💰 Balance Summary</h2>
+
+<ul>
+{% for u in group.users %}
+    <li>
+        {{ u.name }} :
+        {% if balances[u.id] > 0 %}
+            <b style="color:green">Gets ₹{{ balances[u.id] }}</b>
+        {% elif balances[u.id] < 0 %}
+            <b style="color:red">Pays ₹{{ -balances[u.id] }}</b>
+        {% else %}
+            Settled
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+
+<hr>
+
+<h2>🔁 Settlement Transactions</h2>
+
+{% if settlements %}
+<ul>
+{% for s in settlements %}
+    <li>
+        {{ s.from }} ➡ {{ s.to }} : ₹{{ s.amount }}
+    </li>
+{% endfor %}
+</ul>
+{% else %}
+<p>All settled 🎉</p>
+{% endif %}
+
+<a href="/">⬅ Back</a>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+/* ============ PROGRESS BAR FIX FOR JINJA TEMPLATES ============ */
+
+.progress-bar[data-pct] {
+    min-width: 50px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-bar span {
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    position: static;
+}
+
+/* Update progress bar width based on data-pct attribute */
+.progress-bar[data-pct="0"] { width: 0% !important; }
+.progress-bar[data-pct="1"] { width: 1% !important; }
+.progress-bar[data-pct="2"] { width: 2% !important; }
+.progress-bar[data-pct="5"] { width: 5% !important; }
+.progress-bar[data-pct="10"] { width: 10% !important; }
+.progress-bar[data-pct="15"] { width: 15% !important; }
+.progress-bar[data-pct="20"] { width: 20% !important; }
+.progress-bar[data-pct="25"] { width: 25% !important; }
+.progress-bar[data-pct="30"] { width: 30% !important; }
+.progress-bar[data-pct="35"] { width: 35% !important; }
+.progress-bar[data-pct="40"] { width: 40% !important; }
+.progress-bar[data-pct="45"] { width: 45% !important; }
+.progress-bar[data-pct="50"] { width: 50% !important; }
+.progress-bar[data-pct="55"] { width: 55% !important; }
+.progress-bar[data-pct="60"] { width: 60% !important; }
+.progress-bar[data-pct="65"] { width: 65% !important; }
+.progress-bar[data-pct="70"] { width: 70% !important; }
+.progress-bar[data-pct="75"] { width: 75% !important; }
+.progress-bar[data-pct="80"] { width: 80% !important; }
+.progress-bar[data-pct="85"] { width: 85% !important; }
+.progress-bar[data-pct="90"] { width: 90% !important; }
+.progress-bar[data-pct="95"] { width: 95% !important; }
+.progress-bar[data-pct="100"] { width: 100% !important; }

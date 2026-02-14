@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-4">📊 Dashboard</h3>
+
+<!-- SUMMARY CARDS -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm text-bg-primary">
+            <div class="card-body">
+                <h6>Total Expenses</h6>
+                <h3>₹ {{ total_amount }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm text-bg-success">
+            <div class="card-body">
+                <h6>Total Users</h6>
+                <h3>{{ group.users | length }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm text-bg-warning">
+            <div class="card-body">
+                <h6>Total Expenses</h6>
+                <h3>{{ group.expenses | length }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- USERS + EXPENSES -->
+<div class="row">
+
+    <!-- USERS -->
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header fw-bold">👤 Users</div>
+            <div class="card-body">
+
+                <form method="post" action="/add-user" class="mb-3">
+                    <div class="input-group">
+                        <input type="text" name="name" class="form-control" placeholder="User name" required>
+                        <button class="btn btn-primary">Add</button>
+                    </div>
+                </form>
+
+                <ul class="list-group">
+                    {% for user in group.users %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ user.name }}
+                            <form method="post" action="/delete-user/{{ user.id }}">
+                                <button class="btn btn-sm btn-danger">✖</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                    <a href="/settlements" class="btn btn-outline-dark mb-3">
+    🔄 Settle Expenses
+</a>
+
+                </ul>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header fw-bold d-flex justify-content-between">
+                💰 Expenses
+                <a href="/add-expense" class="btn btn-sm btn-success">+ Add Expense</a>
+            </div>
+
+            <div class="card-body">
+                {% if group.expenses %}
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Payer</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in group.expenses %}
+                        <tr>
+                            <td>{{ e.description }}</td>
+                            <td>₹ {{ e.amount }}</td>
+                            <td>{{ e.payer.name }}</td>
+                            <td>
+                                <form method="post" action="/delete-expense/{{ e.id }}">
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <p class="text-muted">No expenses added yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

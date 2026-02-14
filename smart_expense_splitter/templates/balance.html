@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3 class="mb-4">💰 Balances</h3>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for uid, bal in balances.items() %}
+        <tr>
+          <td>{{ users_map[uid] }}</td>
+          <td>
+            {% if bal > 0 %}
+              <span class="text-success">+₹{{ bal }}</span>
+            {% elif bal < 0 %}
+              <span class="text-danger">-₹{{ bal | abs }}</span>
+            {% else %}
+              ₹0
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<h3 class="mb-3">🔄 Settlements</h3>
+
+<div class="card">
+  <div class="card-body">
+
+    {% if settlements %}
+      <ul class="list-group">
+        {% for frm, to, amt in settlements %}
+          <li class="list-group-item">
+            <strong>{{ users_map[frm] }}</strong>
+            pays
+            <strong>{{ users_map[to] }}</strong>
+            ₹{{ amt }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted">No settlements needed 🎉</p>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}

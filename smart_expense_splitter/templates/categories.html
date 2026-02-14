@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">🏷️ Expense Categories</h4>
+                </div>
+                <div class="card-body">
+                    {% if categories %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Spent</th>
+                                    <th>Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set total = spending.values() | sum %}
+                                {% for category in categories | sort %}
+                                    {% set amount = spending.get(category, 0) %}
+                                    {% set percentage = (amount / total * 100) if total > 0 else 0 %}
+                                    {% set pct_value = "%.1f"|format(percentage) %}
+                                    <tr>
+                                        <td><strong>{{ category }}</strong></td>
+                                        <td>₹ {{ "{:.2f}".format(amount) }}</td>
+                                        <td>
+                                            {% set pct_val = "%.1f"|format((amount / total * 100) if total > 0 else 0) %}
+                                            <div class="progress" style="height: 25px;">
+                                                <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ pct_val }}" aria-valuemin="0" aria-valuemax="100">
+                                                    {{ pct_val }}%
+                                                </div>
+                                            </div>
+                                            <script>
+                                                document.currentScript.previousElementSibling.querySelector('.progress-bar').style.width = '{{ pct_val }}%';
+                                            </script>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color: #f8f9fa; font-weight: bold;">
+                                    <td>TOTAL</td>
+                                    <td>₹ {{ "{:.2f}".format(total) }}</td>
+                                    <td>100%</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No expenses with categories yet.</p>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-secondary">⬅ Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header fw-bold">✏️ Settle Partial Debt</div>
+        <div class="card-body">
+
+            <form method="post">
+                <div class="mb-3">
+                    <p><strong>{{ from_user.name }}</strong> owes <strong>{{ to_user.name }}</strong>: <span
+                            class="text-danger">₹ {{ amount }}</span></p>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Amount to Pay (₹)</label>
+                    <input type="number" name="amount" step="0.01" max="{{ amount }}" class="form-control"
+                        value="{{ amount }}" required>
+                    <div class="form-text">Enter the amount you want to settle now.</div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="/settlements" class="btn btn-secondary">⬅ Cancel</a>
+                    <button class="btn btn-primary">💾 Settle</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

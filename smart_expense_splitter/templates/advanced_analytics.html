@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">🎯 Advanced Analytics</h4>
+                    <a href="/" class="btn btn-sm btn-light">⬅ Back</a>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card" style="background-color: #f8f9fa;">
+                                <div class="card-body text-center">
+                                    <h5>✅ Total Paid</h5>
+                                    <h3 class="text-success">₹ {{ "{:.2f}".format(paid_total) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card" style="background-color: #f8f9fa;">
+                                <div class="card-body text-center">
+                                    <h5>⏳ Total Unpaid</h5>
+                                    <h3 class="text-warning">₹ {{ "{:.2f}".format(unpaid_total) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card" style="background-color: #f8f9fa;">
+                                <div class="card-body text-center">
+                                    <h5>💰 Total Expenses</h5>
+                                    <h3 class="text-primary">₹ {{ "{:.2f}".format(paid_total + unpaid_total) }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>📊 Spending by Category</h5>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for category, amount in category_data.items() %}
+                                    <tr>
+                                        <td>{{ category }}</td>
+                                        <td><strong>₹ {{ "{:.2f}".format(amount) }}</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>📈 Top 5 Expenses</h5>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for exp in top_expenses %}
+                                    <tr>
+                                        <td>{{ exp.description }}</td>
+                                        <td><strong>₹ {{ "{:.2f}".format(exp.amount) }}</strong></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="mt-4">
+                        <h5>📅 Monthly Trend</h5>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Spending</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for month, amount in monthly_data.items() | sort(reverse=true) %}
+                                <tr>
+                                    <td>{{ month }}</td>
+                                    <td><strong>₹ {{ "{:.2f}".format(amount) }}</strong></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
