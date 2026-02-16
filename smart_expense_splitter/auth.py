@@ -105,8 +105,8 @@ def register_user(username, password):
             logger.warning(f"Registration failed: Username '{username}' already exists")
             return False, "Username already exists"
         
-        # Hash the password with method='pbkdf2:sha256'
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        # Hash the password using Werkzeug's default method (scrypt)
+        hashed_password = generate_password_hash(password)
         users[username] = {
             "password": hashed_password,
             "created_at": datetime.now().isoformat(),
@@ -139,7 +139,18 @@ def verify_user(username, password):
         
         user_data = users[username]
         
-        # Check if user is active
+        # Handle old format where user_data might just be a string (password)
+        if isinstance(user_data, str):
+            # Old format: migrate to new format
+            user_data = {
+                "password": user_data,
+                "created_at": None,
+                "last_login": None,
+                "is_active": True
+            }
+            users[username] = user_data
+        
+        # Check if user is active (default to True if field missing)
         if not user_data.get("is_active", True):
             logger.warning(f"Login attempt for inactive user: {username}")
             return False, "This account is inactive"
@@ -179,7 +190,7 @@ def change_password(username, old_password, new_password):
             return False, "New password must be different from current password"
         
         users = load_users()
-        users[username]["password"] = generate_password_hash(new_password, method='pbkdf2:sha256')
+        users[username]["password"] = generate_password_hash(new_password)
         save_users(users)
         
         logger.info(f"Password changed for user: {username}")
