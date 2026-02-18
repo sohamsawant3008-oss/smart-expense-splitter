@@ -35,8 +35,17 @@ def allowed_file(filename):
 # Secret key for session management - in production, use a secure random key
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production-2024')
 
-FILE_PATH = "data/expenses.json"
-group = load_group(FILE_PATH)
+# FILE_PATH is now dynamic per user
+def get_current_group():
+    """Helper to get the group for the current logged-in user"""
+    username = session.get('username')
+    if not username:
+        return None
+    # Sanitize username for filename
+    safe_username = "".join([c for c in username if c.isalnum() or c in (' ', '.', '_')]).strip()
+    user_file = os.path.join("data", f"expenses_{safe_username}.json")
+    return load_group(user_file), user_file
+
 # Authentication decorator
 def login_required(f):
     @wraps(f)
@@ -54,6 +63,7 @@ def home_redirect():
 @app.route("/dashboard")
 @login_required
 def dashboard():
+    group, file_path = get_current_group()
     search_query = request.args.get('search', '').strip().lower()
     filter_payer = request.args.get('filter_payer', '')
     start_date = request.args.get('start_date', '')
@@ -181,19 +191,21 @@ def logout():
 @app.route("/add-user", methods=["POST"])
 @login_required
 def add_user():
+    group, file_path = get_current_group()
     name = request.form["name"].strip()
     if not name:
         return redirect(url_for("dashboard"))
 
     user = User(name)
     group.users.append(user)
-    save_group(group, FILE_PATH)
+    save_group(group, file_path)
     return redirect(url_for("dashboard"))
 
 # ---------------- ADD EXPENSE ----------------
 @app.route("/add-expense", methods=["GET", "POST"])
 @login_required
 def add_expense():
+    group, file_path = get_current_group()
     if request.method == "POST":
         desc = request.form.get("description")
         amount = request.form.get("amount")
@@ -210,14 +222,19 @@ def add_expense():
             if group.get_user_by_id(pid)
         ]
 
+        # Validate participants
+        if not participant_ids:
+            flash("⚠️ You must select at least one participant", "warning")
+            return render_template("add_expense.html", group=group)
+
         # Handle receipt upload
         receipt_filename = None
         if 'receipt' in request.files:
             file = request.files['receipt']
             if file and file.filename and allowed_file(file.filename):
-                filename = secure_filename(f"{Expense.__init__.__code__.co_names[0]}_{file.filename}")
-                # Use expense ID-based naming
                 import uuid
+                # Use a safe, unique filename
+                ext = file.filename.rsplit('.', 1)[1].lower()
                 receipt_filename = f"receipt_{uuid.uuid4()}_{secure_filename(file.filename)}"
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], receipt_filename))
 
@@ -226,12 +243,15 @@ def add_expense():
         notes = request.form.get("notes", "")
         tags = [t.strip() for t in request.form.get("tags", "").split(",") if t.strip()]
 
-        expense = Expense(desc, amount, payer, participants, receipt_filename, category, notes, tags)
-        group.expenses.append(expense)
-
-        save_group(group, FILE_PATH)
-        flash("Expense added successfully!", "success")
-        return redirect("/")
+        try:
+            expense = Expense(desc, amount, payer, participants, receipt_filename, category, notes, tags)
+            group.expenses.append(expense)
+            save_group(group, file_path)
+            flash("Expense added successfully!", "success")
+            return redirect("/")
+        except ValueError as e:
+            flash(f"❌ Error adding expense: {str(e)}", "danger")
+            return render_template("add_expense.html", group=group)
 
     return render_template("add_expense.html", group=group)
 
@@ -239,6 +259,7 @@ def add_expense():
 @app.route("/delete-user/<user_id>", methods=["POST"])
 @login_required
 def delete_user(user_id):
+    group, file_path = get_current_group()
     user = group.get_user_by_id(user_id)
 
     if not user:
@@ -250,21 +271,23 @@ def delete_user(user_id):
             return "❌ Cannot delete user. User is used in expenses."
 
     group.users = [u for u in group.users if u.id != user_id]
-    save_group(group, FILE_PATH)
+    save_group(group, file_path)
     return redirect(url_for("dashboard"))
 
 # ---------------- DELETE EXPENSE ----------------
 @app.route("/delete-expense/<expense_id>", methods=["POST"])
 @login_required
 def delete_expense(expense_id):
+    group, file_path = get_current_group()
     group.expenses = [e for e in group.expenses if e.id != expense_id]
-    save_group(group, FILE_PATH)
+    save_group(group, file_path)
     return redirect(url_for("dashboard"))
 
 # ---------------- EDIT USER  AND EDIT EXPENSE ----------------
 @app.route("/edit-user/<user_id>", methods=["GET", "POST"])
 @login_required
 def edit_user(user_id):
+    group, file_path = get_current_group()
     user = group.get_user_by_id(user_id)
 
     if not user:
@@ -291,7 +314,7 @@ def edit_user(user_id):
 
         # ✅ Update
         user.name = new_name
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
 
         flash("✅ User updated successfully", "success")
         return redirect(url_for("dashboard"))
@@ -302,6 +325,7 @@ def edit_user(user_id):
 @app.route("/edit-expense/<expense_id>", methods=["GET", "POST"])
 @login_required
 def edit_expense(expense_id):
+    group, file_path = get_current_group()
     expense = next((e for e in group.expenses if e.id == expense_id), None)
 
     if not expense:
@@ -328,7 +352,7 @@ def edit_expense(expense_id):
         # ✅ Update
         expense.description = description
         expense.amount = amount
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
 
         flash("✅ Expense updated successfully", "success")
         return redirect(url_for("dashboard"))
@@ -340,6 +364,7 @@ def edit_expense(expense_id):
 @app.route("/toggle-payment/<expense_id>", methods=["POST"])
 @login_required
 def toggle_payment(expense_id):
+    group, file_path = get_current_group()
     expense = next((e for e in group.expenses if e.id == expense_id), None)
     if expense:
         expense.paid = not expense.paid
@@ -349,13 +374,14 @@ def toggle_payment(expense_id):
         else:
             expense.paid_date = None
             flash(f"⏳ Expense '{expense.description}' marked as UNPAID", "info")
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
     return redirect(url_for("dashboard"))
 
 # ---------------- ANALYTICS ----------------
 @app.route("/analytics")
 @login_required
 def analytics():
+    group, file_path = get_current_group()
     # Data source: group.expenses (dynamic data from storage)
     
     # 1. Total paid per user (amount)
@@ -412,6 +438,7 @@ def analytics():
 @app.route("/settlements")
 @login_required
 def settlements():
+    group, file_path = get_current_group()
     try:
         balances = calculate_balances(group)
 
@@ -434,6 +461,7 @@ def settlements():
 @login_required
 def settle_full(from_id, to_id, amount):
     """Settle the full debt amount"""
+    group, file_path = get_current_group()
     try:
         payer = group.get_user_by_id(from_id)
         # In settlement context: 'recipient' of payment is the one who was owed money
@@ -459,7 +487,7 @@ def settle_full(from_id, to_id, amount):
         expense.paid_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         
         group.expenses.append(expense)
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
         
         flash(f"✅ Full settlement recorded: {payer.name} paid {recipient.name} ₹{amount}", "success")
         
@@ -472,6 +500,7 @@ def settle_full(from_id, to_id, amount):
 @login_required
 def settle_partial(from_id, to_id, amount):
     """Settle a partial debt amount"""
+    group, file_path = get_current_group()
     payer = group.get_user_by_id(from_id)
     recipient = group.get_user_by_id(to_id)
     
@@ -504,7 +533,7 @@ def settle_partial(from_id, to_id, amount):
         expense.paid_date = datetime.now().strftime("%Y-%m-%d %H:%M")
         
         group.expenses.append(expense)
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
         
         flash(f"✅ Partial settlement recorded: {payer.name} paid {recipient.name} ₹{pay_amount}", "success")
         return redirect("/settlements")
@@ -518,6 +547,7 @@ def settle_partial(from_id, to_id, amount):
 @login_required
 def export_csv():
     """Export expenses as CSV"""
+    group, file_path = get_current_group()
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(['Description', 'Amount', 'Payer', 'Date', 'Category', 'Status'])
@@ -544,6 +574,7 @@ def export_csv():
 @login_required
 def export_pdf():
     """Export expenses as PDF"""
+    group, file_path = get_current_group()
     if not HAS_REPORTLAB:
         flash("PDF export requires reportlab. Install with: pip install reportlab", "warning")
         return redirect("/")
@@ -605,6 +636,7 @@ def export_pdf():
 @login_required
 def set_budget(user_id):
     """Set budget for a user"""
+    group, file_path = get_current_group()
     user = group.get_user_by_id(user_id)
     if not user:
         flash("User not found!", "danger")
@@ -620,7 +652,7 @@ def set_budget(user_id):
         # Add new budget
         budget = Budget(user_id, amount, period)
         group.add_budget(budget)
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
         
         flash(f"✅ Budget set for {user.name}: ₹{amount}/{period}", "success")
         return redirect("/")
@@ -631,6 +663,7 @@ def set_budget(user_id):
 @login_required
 def view_budgets():
     """View budget vs actual spending"""
+    group, file_path = get_current_group()
     budget_data = []
     
     for budget in group.budgets:
@@ -662,6 +695,7 @@ def view_budgets():
 @login_required
 def categories():
     """View and manage categories"""
+    group, file_path = get_current_group()
     categories_list = set(getattr(e, 'category', 'Other') for e in group.expenses)
     
     # Calculate spending by category
@@ -678,6 +712,7 @@ def categories():
 @login_required
 def monthly_report():
     """View monthly expense reports"""
+    group, file_path = get_current_group()
     monthly_data = {}
     
     for e in group.expenses:
@@ -700,13 +735,14 @@ def monthly_report():
 @login_required
 def create_group_route():
     """Create a new trip/event group"""
+    group, file_path = get_current_group()
     if request.method == "POST":
         name = request.form.get("name")
         description = request.form.get("description", "")
         
         new_group = ExpenseGroup(None, name, description)
         group.add_group(new_group)
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
         
         flash(f"✅ Group '{name}' created!", "success")
         return redirect("/")
@@ -717,10 +753,11 @@ def create_group_route():
 @login_required
 def switch_group(group_id):
     """Switch to a different trip/event group"""
+    group, file_path = get_current_group()
     target_group = group.get_group_by_id(group_id)
     if target_group:
         group.active_group = group_id
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
         flash(f"✅ Switched to group: {target_group.name}", "success")
     return redirect("/")
 
@@ -728,6 +765,7 @@ def switch_group(group_id):
 @login_required
 def view_groups():
     """View all trip/event groups"""
+    group, file_path = get_current_group()
     return render_template("view_groups.html", groups=group.groups, active_group=group.active_group)
 
 # ============ RECURRING EXPENSES ============
@@ -736,6 +774,7 @@ def view_groups():
 @login_required
 def recurring_expenses():
     """View and manage recurring expenses"""
+    group, file_path = get_current_group()
     recurring = [e for e in group.expenses if getattr(e, 'is_recurring', False)]
     return render_template("recurring_expenses.html", expenses=recurring)
 
@@ -743,11 +782,12 @@ def recurring_expenses():
 @login_required
 def add_recurring(expense_id):
     """Mark expense as recurring"""
+    group, file_path = get_current_group()
     expense = next((e for e in group.expenses if e.id == expense_id), None)
     if expense:
         expense.is_recurring = True
         expense.recurrence_type = request.form.get("recurrence_type", "monthly")
-        save_group(group, FILE_PATH)
+        save_group(group, file_path)
         flash(f"✅ Expense marked as {expense.recurrence_type} recurring", "success")
     
     return redirect("/recurring-expenses")
@@ -758,6 +798,7 @@ def add_recurring(expense_id):
 @login_required
 def advanced_analytics():
     """Advanced analytics dashboard"""
+    group, file_path = get_current_group()
     # Category distribution
     category_data = {}
     for e in group.expenses:
